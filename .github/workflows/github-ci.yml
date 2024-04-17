@@ -79,7 +79,9 @@ jobs:
       - name: check directory
         run: ls -al
       - name: Docker login
-        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin docker.io
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "$DOCKER_PASSWORD" | docker login -u ${{ secrets.REGISTRY_USER }} --password-stdin docker.io
       - name: Set Docker BuildKit
         run: export DOCKER_BUILDKIT=1
       - name: Build Docker Image
