@@ -65,4 +65,15 @@ public class SupermarketTest {
     void testSetEmptyUrlName() {
         assertThrows(IllegalArgumentException.class, () -> supermarket.setUrlName(""));
     }
+
+    @Test
+    void testSetUrlNameWithSpace() {
+        assertThrows(IllegalArgumentException.class, () -> supermarket.setUrlName("fresh mart"));
+    }
+
+    @Test
+    void testIsValid() {
+        this.supermarket.validate();
+        assertTrue(supermarket.isValid());
+    }
 }
