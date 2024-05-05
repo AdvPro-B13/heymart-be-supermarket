@@ -45,6 +45,26 @@ public class Supermarket {
         this.urlName = newUrlName;
     }
 
+    public void validate() {
+        if (this.id.isBlank()) {
+            setId(UUID.randomUUID().toString());
+        }
+    }
+
+    public boolean isValid() {
+        if (this.id.isBlank()) {
+            return false;
+        }
+        if (this.name.isBlank()) {
+            return false;
+        }
+        if (this.urlName.isBlank()) {
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public String toString() {
         return "Supermarket{" +
