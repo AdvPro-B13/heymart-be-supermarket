@@ -80,3 +80,11 @@ tasks.jacocoTestReport {
         html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
     }
 }
+
+sonar {
+    properties {
+        property("sonar.projectKey", "AdvPro-B13_heymart-be-superemarket")
+        property("sonar.organization", "advpro-b13")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
+}
