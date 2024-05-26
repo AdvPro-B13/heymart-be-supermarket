@@ -4,16 +4,19 @@ import com.heymart.supermarket.model.Supermarket;
 import com.heymart.supermarket.repository.SupermarketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class SupermarketServiceTest {
     @Mock
     private SupermarketRepository supermarketRepository;
@@ -22,150 +25,224 @@ public class SupermarketServiceTest {
     private SupermarketService supermarketService;
 
     private Supermarket dummySupermarket;
+    private Set<String> dummyManagerIds;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        dummyManagerIds = new HashSet<>();
+        dummyManagerIds.addAll(List.of(
+                String.valueOf(Long.MAX_VALUE),
+                String.valueOf(Long.MAX_VALUE-1),
+                String.valueOf(Long.MAX_VALUE-2),
+                String.valueOf(Long.MAX_VALUE-3)
+        ));
+
         Supermarket.SupermarketBuilder builder = new Supermarket.SupermarketBuilder();
         builder.setName("Dummy Mart");
         builder.setColor("#525252");
         builder.setUrlName("dummy mart");
+        builder.setManagerIds(dummyManagerIds);
 
         dummySupermarket = builder.build();
+        dummySupermarket.setId(Long.MAX_VALUE);
     }
 
     @Test
     void createSupermarket() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
         Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
 
         assertEquals(dummySupermarket, createdSupermarket);
-        verify(supermarketRepository, times(1)).save(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(any(Supermarket.class));
     }
 
     @Test
     void updateSupermarket() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
-
-        Supermarket updatedSupermarket = new Supermarket();
-        updatedSupermarket.setId(createdSupermarket.getId());
-        updatedSupermarket.setName("Hey Hey!!");
-        updatedSupermarket.setColor("#666777");
-        updatedSupermarket.setUrlName("hey-hey");
-
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
         verify(supermarketRepository, times(1)).save(dummySupermarket);
 
-        try {
-            Mockito.when(supermarketRepository.save(updatedSupermarket)).thenReturn(updatedSupermarket);
-            Supermarket savedUpdated = supermarketService.update(createdSupermarket.getId(), updatedSupermarket);
+        dummySupermarket.setName("Hey Hey!!");
+        dummySupermarket.setColor("#666777");
+        dummySupermarket.setUrlName("hey-hey");
 
-            assertEquals(updatedSupermarket, savedUpdated);
-            verify(supermarketRepository, times(1)).save(dummySupermarket);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        when(supermarketRepository.findById(Long.MAX_VALUE)).thenReturn(Optional.of(dummySupermarket));
+
+        assertDoesNotThrow(() -> {
+            Supermarket savedUpdated = supermarketService.update(Long.MAX_VALUE, dummySupermarket);
+
+            assertEquals(dummySupermarket, savedUpdated);
+            verify(supermarketRepository, times(2)).save(dummySupermarket);
+        });
     }
 
     @Test
     void updateSupermarket_DoesntExist() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
 
-        Supermarket updatedSupermarket = new Supermarket();
-        updatedSupermarket.setId(createdSupermarket.getId());
-        updatedSupermarket.setName("Hey Hey!!");
-        updatedSupermarket.setColor("#666777");
-        updatedSupermarket.setUrlName("hey-hey");
+        dummySupermarket.setName("Hey Hey!!");
+        dummySupermarket.setColor("#666777");
+        dummySupermarket.setUrlName("hey-hey");
 
-        assertThrows(Exception.class, () -> supermarketService.update(createdSupermarket.getId(), updatedSupermarket));
+        assertThrows(Exception.class, () -> supermarketService.update(767L, dummySupermarket));
     }
 
     @Test
     void deleteSupermarket() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
 
-        doNothing().when(supermarketRepository).deleteById(createdSupermarket.getId());
-        verify(supermarketRepository, times(1)).deleteById(createdSupermarket.getId());
+        when(supermarketRepository.findById(Long.MAX_VALUE)).thenReturn(Optional.of(dummySupermarket));
+        assertDoesNotThrow(() -> {
+            supermarketService.delete(Long.MAX_VALUE);
+            verify(supermarketRepository, times(1)).deleteById(Long.MAX_VALUE);
+        });
+    }
+
+    @Test
+    void addManagerToSupermarket() {
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
+
+        when(supermarketRepository.findById(Long.MAX_VALUE)).thenReturn(Optional.of(dummySupermarket));
+        assertDoesNotThrow(() -> {
+            supermarketService.delete(Long.MAX_VALUE);
+            verify(supermarketRepository, times(1)).deleteById(Long.MAX_VALUE);
+        });
+    }
+
+    @Test
+    void deleteSupermarket_DoesntExist() {
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
+
+        when(supermarketRepository.findById(Long.MAX_VALUE)).thenReturn(Optional.of(dummySupermarket));
+        assertThrows(Exception.class, () -> supermarketService.delete(767L));
     }
 
     @Test
     void getSupermarketPublic() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
 
-        Optional<Supermarket> supermarket = Optional.empty();
+        Optional<Supermarket> supermarket = Optional.of(dummySupermarket);
+        Supermarket mockSupermarket = supermarket.get();
+        mockSupermarket.setManagerIds(null); // simulate public get (no data of managers)
+        when(supermarketRepository.findByUrlName("dummy-mart")).thenReturn(supermarket);
 
-        Mockito.when(supermarketRepository.findByUrlName(createdSupermarket.getUrlName())).thenReturn((supermarket));
-
-        try {
+        assertDoesNotThrow(() -> {
             Supermarket foundSupermarket = supermarketService.getSupermarket("dummy-mart");
-            foundSupermarket.setManagerIds(null);
-            assertEquals(supermarket.get(), foundSupermarket);
-        } catch (Exception ignored) {}
+            assertEquals(mockSupermarket, foundSupermarket);
+            verify(supermarketRepository, times(1)).findByUrlName("dummy-mart");
+        });
     }
 
     @Test
     void getSupermarketPublic_DoesntExist() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
 
         Optional<Supermarket> supermarket = Optional.empty();
-        Mockito.when(supermarketRepository.findByUrlName(createdSupermarket.getUrlName())).thenReturn((supermarket));
+        when(supermarketRepository.findByUrlName("dummy-mart2")).thenReturn(supermarket);
+
         assertThrows(Exception.class, () -> supermarketService.getSupermarket("dummy-mart2"));
     }
 
     @Test
     void getAllSupermarketPublic() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        // simulate 2 supermarket saves
+        Supermarket.SupermarketBuilder builder = new Supermarket.SupermarketBuilder();
+        builder.setName("Dummy Mart2");
+        builder.setColor("#434343");
+        builder.setUrlName("dummy mart2");
+        builder.setManagerIds(dummyManagerIds);
 
-        List<Supermarket> supermarket = List.of(createdSupermarket);
-        Mockito.when(supermarketRepository.findAll()).thenReturn((supermarket));
+        Supermarket dummy2Supermarket = builder.build();
+        dummy2Supermarket.setId(Long.MAX_VALUE-1);
 
-        for (Supermarket s : supermarket) {
-            s.setManagerIds(null);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
+
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummy2Supermarket);
+        supermarketService.create(dummy2Supermarket);
+        verify(supermarketRepository, times(1)).save(dummy2Supermarket);
+
+        List<Supermarket> supermarkets = List.of(dummySupermarket, dummy2Supermarket);
+        when(supermarketRepository.findAll()).thenReturn((supermarkets));
+
+        for (Supermarket s : supermarkets) {
+            s.setManagerIds(null); // simulate public get (no data of managers)
         }
 
         List<Supermarket> allSupermarkets = supermarketService.getAllSupermarket();
-        assertEquals(supermarket, allSupermarkets);
+        assertEquals(supermarkets, allSupermarkets);
+        verify(supermarketRepository, times(1)).findAll();
     }
 
     @Test
     void getSupermarket() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
 
-        Optional<Supermarket> supermarket = Optional.empty();
-        Mockito.when(supermarketRepository.findById(createdSupermarket.getId())).thenReturn((supermarket));
+        Optional<Supermarket> supermarket = Optional.of(dummySupermarket);
+        Supermarket mockSupermarket = supermarket.get();
+        when(supermarketRepository.findById(Long.MAX_VALUE)).thenReturn(supermarket);
 
-        try {
-            Supermarket foundSupermarket = supermarketService.getSupermarketFull(createdSupermarket.getId());
-            foundSupermarket.setManagerIds(null);
-            assertEquals(supermarket.get(), foundSupermarket);
-        } catch (Exception ignored) {}
+        assertDoesNotThrow(() -> {
+            Supermarket foundSupermarket = supermarketService.getSupermarketFull(Long.MAX_VALUE);
+            assertEquals(mockSupermarket, foundSupermarket);
+            verify(supermarketRepository, times(1)).findById(Long.MAX_VALUE);
+        });
     }
 
     @Test
     void getSupermarketAdmin_DoesntExist() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
 
         Optional<Supermarket> supermarket = Optional.empty();
-        Mockito.when(supermarketRepository.findById(createdSupermarket.getId())).thenReturn((supermarket));
-        assertThrows(Exception.class, () -> supermarketService.getSupermarketFull(createdSupermarket.getId()));
+        when(supermarketRepository.findById(Long.MAX_VALUE-1)).thenReturn(supermarket);
+
+        assertThrows(Exception.class, () -> supermarketService.getSupermarketFull(Long.MAX_VALUE-1));
     }
 
     @Test
     void getAllSupermarketAdmin() {
-        Mockito.when(supermarketRepository.save(dummySupermarket)).thenReturn(dummySupermarket);
-        Supermarket createdSupermarket = supermarketService.create(dummySupermarket);
+        // simulate 2 supermarket saves
+        Supermarket.SupermarketBuilder builder = new Supermarket.SupermarketBuilder();
+        builder.setName("Dummy Mart2");
+        builder.setColor("#434343");
+        builder.setUrlName("dummy mart2");
+        builder.setManagerIds(dummyManagerIds);
 
-        List<Supermarket> supermarket = List.of(createdSupermarket);
-        Mockito.when(supermarketRepository.findAll()).thenReturn((supermarket));
+        Supermarket dummy2Supermarket = builder.build();
+        dummy2Supermarket.setId(Long.MAX_VALUE-1);
+
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
+        supermarketService.create(dummySupermarket);
+        verify(supermarketRepository, times(1)).save(dummySupermarket);
+
+        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummy2Supermarket);
+        supermarketService.create(dummy2Supermarket);
+        verify(supermarketRepository, times(1)).save(dummy2Supermarket);
+
+        List<Supermarket> supermarkets = List.of(dummySupermarket, dummy2Supermarket);
+        when(supermarketRepository.findAll()).thenReturn((supermarkets));
 
         List<Supermarket> allSupermarkets = supermarketService.getAllSupermarketFull();
-        assertEquals(supermarket, allSupermarkets);
+        assertEquals(supermarkets, allSupermarkets);
+        verify(supermarketRepository, times(1)).findAll();
     }
 }
