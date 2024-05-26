@@ -136,6 +136,5 @@ public class SupermarketRepositoryTest {
 
         Supermarket savedSupermarket = supermarketRepository.save(dummySupermarket);
         assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()).getManagerIds(), dummyManagerIds);
-
     }
 }
