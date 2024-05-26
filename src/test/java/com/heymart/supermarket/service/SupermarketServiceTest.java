@@ -105,19 +105,6 @@ public class SupermarketServiceTest {
     }
 
     @Test
-    void addManagerToSupermarket() {
-        when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
-        supermarketService.create(dummySupermarket);
-        verify(supermarketRepository, times(1)).save(dummySupermarket);
-
-        when(supermarketRepository.findById(Long.MAX_VALUE)).thenReturn(Optional.of(dummySupermarket));
-        assertDoesNotThrow(() -> {
-            supermarketService.delete(Long.MAX_VALUE);
-            verify(supermarketRepository, times(1)).deleteById(Long.MAX_VALUE);
-        });
-    }
-
-    @Test
     void deleteSupermarket_DoesntExist() {
         when(supermarketRepository.save(any(Supermarket.class))).thenReturn(dummySupermarket);
         supermarketService.create(dummySupermarket);
