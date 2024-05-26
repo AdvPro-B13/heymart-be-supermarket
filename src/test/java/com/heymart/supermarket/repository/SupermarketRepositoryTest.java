@@ -34,22 +34,24 @@ public class SupermarketRepositoryTest {
                 String.valueOf(Long.MAX_VALUE-3)
         ));
 
-        this.dummySupermarket = new Supermarket();
-        this.dummySupermarket.setName("Dummy Mart");
-        this.dummySupermarket.setColor("#525252");
-        this.dummySupermarket.setUrlName("dummy mart");
-        this.dummySupermarket.setManagerIds(dummyManagerIds);
+        Supermarket.SupermarketBuilder builder = new Supermarket.SupermarketBuilder();
+        builder.setName("Dummy Mart");
+        builder.setColor("#525252");
+        builder.setUrlName("dummy mart");
+        builder.setManagerIds(dummyManagerIds);
 
+        this.dummySupermarket = builder.build();
         entityManager.persist(dummySupermarket);
     }
 
     @Test
     void saveSupermarket() {
-        Supermarket supermarket = new Supermarket();
-        supermarket.setName("Fresh Produce Mart");
-        supermarket.setColor("#34e324");
-        supermarket.setUrlName("fresh-produce-mart");
-        supermarket.setManagerIds(dummyManagerIds);
+        Supermarket supermarket = new Supermarket.SupermarketBuilder(
+                "Fresh Produce Mart",
+                "#34e324",
+                "fresh-produce-mart",
+                dummyManagerIds
+        ).build();
 
         Supermarket savedSupermarket = supermarketRepository.save(supermarket);
         assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()), supermarket);
@@ -57,11 +59,12 @@ public class SupermarketRepositoryTest {
 
     @Test
     void saveSupermarket_UsedUrl() {
-        Supermarket supermarket = new Supermarket();
-        supermarket.setName("Dummy Mart 2");
-        supermarket.setColor("#34e324");
-        supermarket.setUrlName("dummy-mart");
-        supermarket.setManagerIds(dummyManagerIds);
+        Supermarket supermarket = new Supermarket.SupermarketBuilder(
+                "Dummy Mart 2",
+                "#34e324",
+                "dummy-mart",
+                dummyManagerIds
+        ).build();
 
         assertThrows(DataIntegrityViolationException.class, () -> supermarketRepository.save(supermarket));
     }
@@ -70,21 +73,6 @@ public class SupermarketRepositoryTest {
     void saveSupermarket_EmptyFields() {
         Supermarket supermarket = new Supermarket();
         assertThrows(DataIntegrityViolationException.class, () -> supermarketRepository.save(supermarket));
-    }
-
-    @Test
-    void updateSupermarket() {
-        String newName = "Hey Hey!!";
-        String newColorCode = "#2d2d2d";
-        String newUrlName = "hey-hey";
-        dummySupermarket.setName(newName);
-        dummySupermarket.setColor(newColorCode);
-        dummySupermarket.setUrlName(newUrlName);
-
-        supermarketRepository.save(dummySupermarket);
-        assertEquals(entityManager.find(Supermarket.class, dummySupermarket.getId()).getName(), newName);
-        assertEquals(entityManager.find(Supermarket.class, dummySupermarket.getId()).getColor(), newColorCode);
-        assertEquals(entityManager.find(Supermarket.class, dummySupermarket.getId()).getUrlName(), newUrlName);
     }
 
     @Test

@@ -6,12 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 
-@Getter
+@Builder
 @Setter
+@Getter
 @Entity
 @Table(
         name = "supermarket",
@@ -36,7 +38,17 @@ public class Supermarket implements Serializable {
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @CollectionTable(name="supermarketmanager", joinColumns = @JoinColumn(name="supermarket_id"))
-    private Set<String> managerIds = new HashSet<>();
+    private Set<String> managerIds;
+
+    public Supermarket(SupermarketBuilder builder) {
+        this.setName(builder.name);
+        this.setColor(builder.color);
+        this.setUrlName(builder.urlName);
+        this.setManagerIds(builder.managerIds != null ? new HashSet<>(builder.managerIds) : new HashSet<>());
+    }
+
+    public Supermarket() {
+    }
 
     public void setUrlName(String newUrl) {
         String sanitizedString;
@@ -52,14 +64,18 @@ public class Supermarket implements Serializable {
         this.urlName = sanitizedString;
     }
 
-    public Set<String> addManagerId(String newManagerId) {
-        managerIds.add(newManagerId);
-        return managerIds;
+    public void addManagerId(String managerId) {
+        if (managerId == null) {
+            throw new NullPointerException();
+        }
+        managerIds.add(managerId);
     }
 
-    public Set<String> removeManagerId(String managerId) {
+    public void removeManagerId(String managerId) {
+        if (managerId == null) {
+            throw new NullPointerException();
+        }
         managerIds.remove(managerId);
-        return managerIds;
     }
 
     @Override
@@ -70,5 +86,28 @@ public class Supermarket implements Serializable {
                 ", color='" + color + '\'' +
                 ", urlName='" + urlName + '\'' +
                 '}';
+    }
+
+    public static class SupermarketBuilder {
+        @Setter private String name;
+        @Setter private String color;
+        @Setter private String urlName;
+        @Setter private Set<String> managerIds;
+
+        public SupermarketBuilder() {}
+        public SupermarketBuilder(String name, String color, String urlName, Set<String> managerIds) {
+            this.name = name;
+            this.color = color;
+            this.urlName = urlName;
+            this.managerIds = managerIds;
+        }
+
+        public Supermarket build() {
+            if (this.color == null) this.color = "#cccccc";
+            if (this.name == null) throw new IllegalArgumentException();
+            if (this.urlName == null) throw new IllegalArgumentException();
+
+            return new Supermarket(this);
+        }
     }
 }
