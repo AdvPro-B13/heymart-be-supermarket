@@ -1,68 +1,49 @@
 package com.heymart.supermarket.model;
 
-import java.util.Set;
-import java.util.UUID;
+import java.io.Serializable;
+import java.util.Arrays;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity
+
 @Getter
 @Setter
-public class Supermarket {
+@Entity
+@Table(
+        name = "supermarket",
+        schema = "public",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "unique_url", columnNames = {"urlName"})
+        }
+)
+public class Supermarket implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
+
+    @Column(name = "displayName", nullable = false)
     private String name;
+
+    @Column(name = "accentColor", nullable = false, columnDefinition = "varchar(7) default '#cccccc'")
     private String color;
+
+    @Column(name = "urlName", nullable = false)
     private String urlName;
-    private Set<String> managers;
 
-    public Supermarket() {
-        this.id = UUID.randomUUID().toString();
-    }
+    public void setUrlName(String newUrl) {
+        String sanitizedString;
+        char[] chars = newUrl.toLowerCase().toCharArray();
 
-    public void setName(String name) {
-        if (name.isBlank()) {
-            throw new IllegalArgumentException("Name cannot be empty");
-        }
-        this.name = name;
-    }
-
-    public void setUrlName(String urlName) {
-        if (urlName.isBlank()) {
-            throw new IllegalArgumentException("URL Name cannot be empty");
-        }
-
-        String newUrlName = urlName.toLowerCase();
-        char[] characters = newUrlName.toCharArray();
-        for (char c : characters) {
-            if (c == ' ') {
-                throw new IllegalArgumentException("URL Name cannot contain spaces");
+        for (int i=0; i<chars.length; i++) {
+            if (chars[i] == ' ') {
+                chars[i] = '-';
             }
         }
 
-        this.urlName = newUrlName;
-    }
-
-    public void validate() {
-        if (this.id.isBlank()) {
-            setId(UUID.randomUUID().toString());
-        }
-    }
-
-    public boolean isValid() {
-        if (this.id.isBlank()) {
-            return false;
-        }
-        if (this.name.isBlank()) {
-            return false;
-        }
-        if (this.urlName.isBlank()) {
-            return false;
-        }
-
-        return true;
+        sanitizedString = String.valueOf(chars);
+        this.urlName = sanitizedString;
     }
 
     @Override
