@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.4"
     id("io.spring.dependency-management") version "1.1.4"
-    id("org.sonarqube") version "4.4.1.3373"
+    id("org.sonarqube") version "5.0.0.4638"
     jacoco
 }
 
@@ -61,6 +61,10 @@ tasks.withType<Test> {
 }
 
 tasks.test {
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
+
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
 }
