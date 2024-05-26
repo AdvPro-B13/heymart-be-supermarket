@@ -1,6 +1,6 @@
 package com.heymart.supermarket.service;
 
-import com.heymart.supermarket.model.Supermarket
+import com.heymart.supermarket.model.Supermarket;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
