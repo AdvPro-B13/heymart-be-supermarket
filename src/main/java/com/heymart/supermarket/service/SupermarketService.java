@@ -22,17 +22,16 @@ public class SupermarketService {
     }
 
     public Supermarket update(Long id, Supermarket supermarket) throws Exception {
-        if (supermarketRepository.existsById(id)) {
-            if (id.equals(supermarket.getId())) {
-                return supermarketRepository.save(supermarket);
-            }
-            throw new Exception("Given ID and Supermarket's ID don't match, update cancelled");
+        Optional<Supermarket> foundSupermarket = supermarketRepository.findById(id);
+        if (foundSupermarket.isPresent()) {
+            return supermarketRepository.save(supermarket);
         }
         throw new Exception("Cannot find Supermarket with matching ID to update");
     }
 
     public void delete(Long id) throws Exception {
-        if (supermarketRepository.existsById(id)) {
+        Optional<Supermarket> foundSupermarket = supermarketRepository.findById(id);
+        if (foundSupermarket.isPresent()) {
             supermarketRepository.deleteById(id);
             return;
         }
