@@ -9,7 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,13 +22,23 @@ public class SupermarketRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
     private Supermarket dummySupermarket;
+    private Set<String> dummyManagerIds;
 
     @BeforeEach
     void setUp() {
+        this.dummyManagerIds = new HashSet<>();
+        this.dummyManagerIds.addAll(List.of(
+                String.valueOf(Long.MAX_VALUE),
+                String.valueOf(Long.MAX_VALUE-1),
+                String.valueOf(Long.MAX_VALUE-2),
+                String.valueOf(Long.MAX_VALUE-3)
+        ));
+
         this.dummySupermarket = new Supermarket();
         this.dummySupermarket.setName("Dummy Mart");
         this.dummySupermarket.setColor("#525252");
         this.dummySupermarket.setUrlName("dummy mart");
+        this.dummySupermarket.setManagerIds(dummyManagerIds);
 
         entityManager.persist(dummySupermarket);
     }
@@ -39,6 +49,7 @@ public class SupermarketRepositoryTest {
         supermarket.setName("Fresh Produce Mart");
         supermarket.setColor("#34e324");
         supermarket.setUrlName("fresh-produce-mart");
+        supermarket.setManagerIds(dummyManagerIds);
 
         Supermarket savedSupermarket = supermarketRepository.save(supermarket);
         assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()), supermarket);
@@ -50,6 +61,7 @@ public class SupermarketRepositoryTest {
         supermarket.setName("Dummy Mart 2");
         supermarket.setColor("#34e324");
         supermarket.setUrlName("dummy-mart");
+        supermarket.setManagerIds(dummyManagerIds);
 
         assertThrows(DataIntegrityViolationException.class, () -> supermarketRepository.save(supermarket));
     }
@@ -105,5 +117,25 @@ public class SupermarketRepositoryTest {
     void findSupermarketByUrlName_Fail() {
         Optional<Supermarket> foundSupermarket = supermarketRepository.findByUrlName("hey-mart");
         assertFalse(foundSupermarket.isPresent());
+    }
+
+    // Managers
+    @Test
+    void addManagerIdToSupermarket() {
+        dummyManagerIds.add("e3f04d7b-d7b4-47cd-8aa4-14d101e7124f");
+        dummySupermarket.addManagerId("e3f04d7b-d7b4-47cd-8aa4-14d101e7124f");
+
+        Supermarket savedSupermarket = supermarketRepository.save(dummySupermarket);
+        assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()).getManagerIds(), dummyManagerIds);
+    }
+
+    @Test
+    void removeManagerIdFromSupermarket() {
+        dummyManagerIds.remove(String.valueOf(Long.MAX_VALUE-3));
+        dummySupermarket.removeManagerId(String.valueOf(Long.MAX_VALUE-3));
+
+        Supermarket savedSupermarket = supermarketRepository.save(dummySupermarket);
+        assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()).getManagerIds(), dummyManagerIds);
+
     }
 }
