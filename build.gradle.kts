@@ -2,6 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.2.4"
     id("io.spring.dependency-management") version "1.1.4"
+    id("org.sonarqube") version "4.4.1.3373"
     jacoco
 }
 
@@ -10,6 +11,9 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 configurations {
@@ -67,7 +71,7 @@ tasks.jacocoTestReport {
     }))
     dependsOn(tasks.test) // tests are required to run before generating the report
     reports {
-        xml.required.set(false)
+        xml.required.set(true)
         csv.required.set(false)
         html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
     }
