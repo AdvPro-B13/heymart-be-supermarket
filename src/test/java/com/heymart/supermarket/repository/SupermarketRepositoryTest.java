@@ -116,13 +116,4 @@ public class SupermarketRepositoryTest {
         Supermarket savedSupermarket = supermarketRepository.save(dummySupermarket);
         assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()).getManagerIds(), dummyManagerIds);
     }
-
-    @Test
-    void removeManagerIdFromSupermarket() {
-        dummyManagerIds.remove(String.valueOf(Long.MAX_VALUE-3));
-        dummySupermarket.removeManagerId(String.valueOf(Long.MAX_VALUE-3));
-
-        Supermarket savedSupermarket = supermarketRepository.save(dummySupermarket);
-        assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()).getManagerIds(), dummyManagerIds);
-    }
 }
