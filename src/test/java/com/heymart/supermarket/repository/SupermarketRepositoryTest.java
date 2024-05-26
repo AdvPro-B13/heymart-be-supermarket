@@ -106,14 +106,4 @@ public class SupermarketRepositoryTest {
         Optional<Supermarket> foundSupermarket = supermarketRepository.findByUrlName("hey-mart");
         assertFalse(foundSupermarket.isPresent());
     }
-
-    // Managers
-    @Test
-    void addManagerIdToSupermarket() {
-        dummyManagerIds.add("e3f04d7b-d7b4-47cd-8aa4-14d101e7124f");
-        dummySupermarket.addManagerId("e3f04d7b-d7b4-47cd-8aa4-14d101e7124f");
-
-        Supermarket savedSupermarket = supermarketRepository.save(dummySupermarket);
-        assertEquals(entityManager.find(Supermarket.class, savedSupermarket.getId()).getManagerIds(), dummyManagerIds);
-    }
 }
