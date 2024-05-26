@@ -8,8 +8,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class AuthServiceClientImpl implements AuthServiceClient {
     RestTemplate restTemplate = new RestTemplate();
-    @Value("${auth.api}")
-    String authServiceUrl;
+    String authServiceUrl = "http://34.142.195.221/api/auth";
 
     public boolean verifyUserAuthorization(String action, String authorizationHeader) {
         if (authorizationHeader == null) {
